@@ -27,8 +27,14 @@ func NewTaskService(taskRepo repository.TaskRepository) TaskService {
 
 func (s *taskService) CreateTask(userID uint, req dto.CreateTaskRequest) (*dto.TaskResponse, error) {
 	status := req.Status
+
 	if status == "" {
 		status = "pending"
+	}
+
+	var tags []entity.TaskTag
+	for _, tagName := range req.Tags {
+		tags = append(tags, entity.TaskTag{Name: tagName})
 	}
 
 	task := entity.Task{
@@ -36,6 +42,7 @@ func (s *taskService) CreateTask(userID uint, req dto.CreateTaskRequest) (*dto.T
 		Title:       req.Title,
 		Description: req.Description,
 		Status:      status,
+		Tags:        tags,
 	}
 
 	err := s.taskRepo.Create(&task)
@@ -84,8 +91,14 @@ func (s *taskService) GetTaskByID(id uint, userID uint) (*dto.TaskResponse, erro
 
 func (s *taskService) UpdateTask(id uint, userID uint, req dto.UpdateTaskRequest) (*dto.TaskResponse, error) {
 	task, err := s.taskRepo.FindByIDAndUserID(id, userID)
+
 	if err != nil {
 		return nil, errors.New("task tidak ditemukan")
+	}
+
+	var newTags []entity.TaskTag
+	for _, tagName := range req.Tags {
+		newTags = append(newTags, entity.TaskTag{TaskID: id, Name: tagName})
 	}
 
 	task.Title = req.Title
@@ -110,12 +123,20 @@ func (s *taskService) DeleteTask(id uint, userID uint) error {
 }
 
 func formatTaskResponse(task *entity.Task) *dto.TaskResponse {
+	var tagNames []string
+	for _, tag := range task.Tags {
+		tagNames = append(tagNames, tag.Name)
+	}
+	if tagNames == nil {
+		tagNames = []string{}
+	}
 	return &dto.TaskResponse{
 		ID:          task.ID,
 		UserID:      task.UserID,
 		Title:       task.Title,
 		Description: task.Description,
 		Status:      task.Status,
+		Tags:        tagNames,
 		CreatedAt:   task.CreatedAt,
 		UpdatedAt:   task.UpdatedAt,
 	}

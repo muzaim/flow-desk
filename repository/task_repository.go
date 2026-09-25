@@ -31,7 +31,8 @@ func (r *taskRepository) FindByUserID(userID uint, query dto.TaskQueryParam) ([]
 	var tasks []entity.Task
 	var totalData int64
 
-	dbQuery := r.db.Model(&entity.Task{}).Where("user_id = ?", userID)
+	// dbQuery := r.db.Model(&entity.Task{}).Where("user_id = ?", userID)
+	dbQuery := r.db.Model(&entity.Task{}).Preload("Tags").Where("user_id = ?", userID)
 
 	if query.Status != "" {
 		dbQuery = dbQuery.Where("status = ?", query.Status)
@@ -57,7 +58,10 @@ func (r *taskRepository) FindByUserID(userID uint, query dto.TaskQueryParam) ([]
 
 func (r *taskRepository) FindByIDAndUserID(id uint, userID uint) (*entity.Task, error) {
 	var task entity.Task
-	err := r.db.Where("id = ? AND user_id = ?", id, userID).First(&task).Error
+
+	// err := r.db.Where("id = ? AND user_id = ?", id, userID).First(&task).Error
+	err := r.db.Preload("Tags").Where("id = ? AND user_id = ?", id, userID).First(&task).Error
+
 	if err != nil {
 		return nil, err
 	}

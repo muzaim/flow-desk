@@ -8,6 +8,7 @@ type Task struct {
 	Title       string    `gorm:"type:varchar(255);not null" json:"title"`
 	Description string    `gorm:"type:text" json:"description"`
 	Status      string    `gorm:"type:varchar(20);default:'pending'" json:"status"`
+	Tags        []TaskTag `gorm:"foreignKey:TaskID" json:"tags,omitempty"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }

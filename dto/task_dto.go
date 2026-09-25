@@ -3,15 +3,17 @@ package dto
 import "time"
 
 type CreateTaskRequest struct {
-	Title       string `json:"title" binding:"required,min=3,max=255"`
-	Description string `json:"description"`
-	Status      string `json:"status"`
+	Title       string   `json:"title" binding:"required,min=3,max=255"`
+	Description string   `json:"description"`
+	Status      string   `json:"status"`
+	Tags        []string `json:"tags"`
 }
 
 type UpdateTaskRequest struct {
-	Title       string `json:"title" binding:"required,min=3,max=255"`
-	Description string `json:"description"`
-	Status      string `json:"status" binding:"required,oneof=pending in_progress completed"`
+	Title       string   `json:"title" binding:"required,min=3,max=255"`
+	Description string   `json:"description"`
+	Status      string   `json:"status" binding:"required,oneof=pending in_progress completed"`
+	Tags        []string `json:"tags"`
 }
 
 type TaskResponse struct {
@@ -20,6 +22,7 @@ type TaskResponse struct {
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	Status      string    `json:"status"`
+	Tags        []string  `json:"tags"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
