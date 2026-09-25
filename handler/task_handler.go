@@ -41,16 +41,20 @@ func (h *TaskHandler) Create(c *gin.Context) {
 
 func (h *TaskHandler) GetAll(c *gin.Context) {
 	userID := c.MustGet("userID").(uint)
-
-	res, err := h.taskService.GetTasks(userID)
+	var query dto.TaskQueryParam
+	if err := c.ShouldBindQuery(&query); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	res, err := h.taskService.GetTasks(userID, query)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Berhasil mengambil daftar task",
-		"data":    res,
+		"data":    res.Data,
+		"meta":    res.Meta,
 	})
 }
 
