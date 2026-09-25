@@ -1,0 +1,22 @@
+# Temporary build folder (Air live reload)
+tmp/
+
+# Environment Variables (Penting! Jangan pernah push credential/secret ke GitHub)
+.env
+
+# Binary / Executable Output
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+main
+flow-desk
+
+# Mac OS System Files
+.DS_Store
+
+# IDE Configs
+.idea/
+.vscode/
+*.swp
