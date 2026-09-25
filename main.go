@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"flow-desk/client"
 	"flow-desk/config"
 	"flow-desk/handler"
 	"flow-desk/repository"
@@ -30,12 +31,17 @@ func main() {
 	taskService := service.NewTaskService(taskRepo)
 	taskHandler := handler.NewTaskHandler(taskService)
 
+	wilayahClient := client.NewWilayahClient()
+	regionService := service.NewRegionService(wilayahClient)
+	regionHandler := handler.NewRegionHandler(regionService)
+
 	r := gin.Default()
 
 	routeConfig := routes.RouteConfig{
-		App:         r,
-		AuthHandler: authHandler,
-		TaskHandler: taskHandler,
+		App:           r,
+		AuthHandler:   authHandler,
+		TaskHandler:   taskHandler,
+		RegionHandler: regionHandler,
 	}
 	routeConfig.SetupRoutes()
 

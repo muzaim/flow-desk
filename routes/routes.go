@@ -8,9 +8,10 @@ import (
 )
 
 type RouteConfig struct {
-	App         *gin.Engine
-	AuthHandler *handler.AuthHandler
-	TaskHandler *handler.TaskHandler
+	App           *gin.Engine
+	AuthHandler   *handler.AuthHandler
+	TaskHandler   *handler.TaskHandler
+	RegionHandler *handler.RegionHandler
 }
 
 func (c *RouteConfig) SetupRoutes() {
@@ -23,6 +24,8 @@ func (c *RouteConfig) SetupRoutes() {
 
 	api := c.App.Group("/api/v1")
 	{
+		api.GET("/provinces", c.RegionHandler.GetProvinces)
+
 		auth := api.Group("/auth")
 		{
 			auth.POST("/register", c.AuthHandler.Register)
