@@ -29,7 +29,6 @@ func ConnectDatabase() *gorm.DB {
 	return db
 }
 
-// Helper function untuk mengambil env dengan fallback value
 func getEnv(key, defaultValue string) string {
 	val := os.Getenv(key)
 	if val == "" {
