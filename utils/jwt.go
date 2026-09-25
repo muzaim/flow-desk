@@ -27,8 +27,6 @@ func GenerateToken(userID uint) (string, error) {
 	return token.SignedString(secretKey)
 }
 
-// (Tambahkan fungsi ini di utils/jwt.go)
-
 func ValidateToken(tokenString string) (*JWTClaims, error) {
 	secretKey := []byte(os.Getenv("JWT_SECRET"))
 

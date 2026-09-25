@@ -24,8 +24,6 @@ type TaskResponse struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
-// (Tambahkan struct ini di file dto/task_dto.go)
-
 type TaskQueryParam struct {
 	Page   int    `form:"page"`
 	Limit  int    `form:"limit"`

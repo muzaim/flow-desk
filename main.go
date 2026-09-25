@@ -5,10 +5,9 @@ import (
 	"os"
 
 	"flow-desk/config"
-	"flow-desk/entity"
 	"flow-desk/handler"
-	"flow-desk/middleware"
 	"flow-desk/repository"
+	"flow-desk/routes"
 	"flow-desk/service"
 
 	"github.com/gin-gonic/gin"
@@ -18,15 +17,10 @@ import (
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Println("Peringatan: File .env tidak ditemukan")
+		log.Println("File .env tidak ditemukan")
 	}
 
 	db := config.ConnectDatabase()
-
-	err = db.AutoMigrate(&entity.User{}, &entity.Task{})
-	if err != nil {
-		log.Fatalf("Gagal auto migrate: %v", err)
-	}
 
 	userRepo := repository.NewUserRepository(db)
 	authService := service.NewAuthService(userRepo)
@@ -38,24 +32,12 @@ func main() {
 
 	r := gin.Default()
 
-	api := r.Group("/api/v1")
-	{
-		auth := api.Group("/auth")
-		{
-			auth.POST("/register", authHandler.Register)
-			auth.POST("/login", authHandler.Login)
-		}
-
-		tasks := api.Group("/tasks")
-		tasks.Use(middleware.AuthMiddleware())
-		{
-			tasks.POST("", taskHandler.Create)
-			tasks.GET("", taskHandler.GetAll)
-			tasks.GET("/:id", taskHandler.GetByID)
-			tasks.PUT("/:id", taskHandler.Update)
-			tasks.DELETE("/:id", taskHandler.Delete)
-		}
+	routeConfig := routes.RouteConfig{
+		App:         r,
+		AuthHandler: authHandler,
+		TaskHandler: taskHandler,
 	}
+	routeConfig.SetupRoutes()
 
 	port := os.Getenv("PORT")
 	if port == "" {
