@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS task_logs;
+ALTER TABLE users DROP COLUMN team_id;

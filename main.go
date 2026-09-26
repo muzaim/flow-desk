@@ -30,7 +30,7 @@ func main() {
 	authHandler := handler.NewAuthHandler(authService)
 
 	taskRepo := repository.NewTaskRepository(db)
-	taskService := service.NewTaskService(taskRepo)
+	taskService := service.NewTaskService(taskRepo, userRepo) // Pass userRepo di sini
 	taskHandler := handler.NewTaskHandler(taskService)
 
 	r := gin.New()

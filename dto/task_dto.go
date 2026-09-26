@@ -14,6 +14,10 @@ type UpdateTaskRequest struct {
 	Status      string `json:"status" binding:"required,oneof=pending in_progress completed"`
 }
 
+type AssignTaskRequest struct {
+	AssigneeID uint `json:"assignee_id" binding:"required"`
+}
+
 type TaskResponse struct {
 	ID          uint      `json:"id"`
 	UserID      uint      `json:"user_id"`
