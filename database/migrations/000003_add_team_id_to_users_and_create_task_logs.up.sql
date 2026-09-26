@@ -1,0 +1,15 @@
+ALTER TABLE users ADD COLUMN team_id BIGINT UNSIGNED NULL AFTER password;
+
+CREATE TABLE IF NOT EXISTS task_logs (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    task_id BIGINT UNSIGNED NOT NULL,
+    performed_by BIGINT UNSIGNED NOT NULL,
+    previous_user_id BIGINT UNSIGNED NOT NULL,
+    new_user_id BIGINT UNSIGNED NOT NULL,
+    action VARCHAR(50) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_task_logs_task FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+    CONSTRAINT fk_task_logs_performed FOREIGN KEY (performed_by) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_task_logs_prev FOREIGN KEY (previous_user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_task_logs_next FOREIGN KEY (new_user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

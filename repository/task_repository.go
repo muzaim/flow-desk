@@ -11,8 +11,12 @@ type TaskRepository interface {
 	Create(task *entity.Task) error
 	FindByUserID(userID uint, query dto.TaskQueryParam) ([]entity.Task, int64, error)
 	FindByIDAndUserID(id uint, userID uint) (*entity.Task, error)
+	FindByID(id uint) (*entity.Task, error)
 	Update(task *entity.Task) error
+	UpdateTx(tx *gorm.DB, task *entity.Task) error
+	CreateLogTx(tx *gorm.DB, log *entity.TaskLog) error
 	Delete(id uint, userID uint) error
+	GetDB() *gorm.DB
 }
 
 type taskRepository struct {
@@ -70,4 +74,25 @@ func (r *taskRepository) Update(task *entity.Task) error {
 
 func (r *taskRepository) Delete(id uint, userID uint) error {
 	return r.db.Where("id = ? AND user_id = ?", id, userID).Delete(&entity.Task{}).Error
+}
+
+func (r *taskRepository) GetDB() *gorm.DB {
+	return r.db
+}
+
+func (r *taskRepository) FindByID(id uint) (*entity.Task, error) {
+	var task entity.Task
+	err := r.db.First(&task, id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &task, nil
+}
+
+func (r *taskRepository) UpdateTx(tx *gorm.DB, task *entity.Task) error {
+	return tx.Save(task).Error
+}
+
+func (r *taskRepository) CreateLogTx(tx *gorm.DB, log *entity.TaskLog) error {
+	return tx.Create(log).Error
 }

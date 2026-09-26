@@ -7,6 +7,7 @@ type User struct {
 	Name      string    `gorm:"type:varchar(100);not null" json:"name"`
 	Email     string    `gorm:"type:varchar(100);unique;not null" json:"email"`
 	Password  string    `gorm:"type:varchar(255);not null" json:"-"`
+	TeamID    *uint     `gorm:"type:bigint unsigned" json:"team_id"`
 	Tasks     []Task    `gorm:"foreignKey:UserID" json:"tasks,omitempty"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`

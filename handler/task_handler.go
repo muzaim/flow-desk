@@ -137,3 +137,33 @@ func (h *TaskHandler) Delete(c *gin.Context) {
 		"message": "Task berhasil dihapus",
 	})
 }
+
+func (h *TaskHandler) Assign(c *gin.Context) {
+	userID := c.MustGet("userID").(uint)
+
+	taskIDStr := c.Param("id")
+	taskID, err := strconv.ParseUint(taskIDStr, 10, 32)
+	if err != nil {
+		appErr := utils.NewBadRequestError("INVALID_TASK_ID", "ID Task tidak valid", err)
+		utils.RespondWithError(c, appErr)
+		return
+	}
+
+	var req dto.AssignTaskRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		appErr := utils.NewBadRequestError("INVALID_INPUT", "Format payload request tidak valid", err)
+		utils.RespondWithError(c, appErr)
+		return
+	}
+
+	res, err := h.taskService.AssignTask(uint(taskID), userID, req)
+	if err != nil {
+		utils.RespondWithError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Task berhasil di-assign",
+		"data":    res,
+	})
+}

@@ -45,6 +45,7 @@ func (c *RouteConfig) SetupRoutes() {
 			tasks.GET("/:id", c.TaskHandler.GetByID)
 			tasks.PUT("/:id", c.TaskHandler.Update)
 			tasks.DELETE("/:id", c.TaskHandler.Delete)
+			tasks.POST("/:id/assign", c.TaskHandler.Assign)
 		}
 	}
 }
