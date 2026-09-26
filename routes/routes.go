@@ -3,14 +3,16 @@ package routes
 import (
 	"flow-desk/handler"
 	"flow-desk/middleware"
+	"flow-desk/repository"
 
 	"github.com/gin-gonic/gin"
 )
 
 type RouteConfig struct {
-	App         *gin.Engine
-	AuthHandler *handler.AuthHandler
-	TaskHandler *handler.TaskHandler
+	App             *gin.Engine
+	AuthHandler     *handler.AuthHandler
+	TaskHandler     *handler.TaskHandler
+	IdempotencyRepo repository.IdempotencyRepository
 }
 
 func (c *RouteConfig) SetupRoutes() {
@@ -32,7 +34,7 @@ func (c *RouteConfig) SetupRoutes() {
 		tasks := api.Group("/tasks")
 		tasks.Use(middleware.AuthMiddleware())
 		{
-			tasks.POST("", c.TaskHandler.Create)
+			tasks.POST("", middleware.IdempotencyMiddleware(c.IdempotencyRepo), c.TaskHandler.Create)
 			tasks.GET("", c.TaskHandler.GetAll)
 			tasks.GET("/:id", c.TaskHandler.GetByID)
 			tasks.PUT("/:id", c.TaskHandler.Update)

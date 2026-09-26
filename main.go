@@ -22,6 +22,9 @@ func main() {
 
 	db := config.ConnectDatabase()
 
+	rdb := config.ConnectRedis()
+	idempotencyRepo := repository.NewIdempotencyRepository(rdb)
+
 	userRepo := repository.NewUserRepository(db)
 	authService := service.NewAuthService(userRepo)
 	authHandler := handler.NewAuthHandler(authService)
@@ -33,9 +36,10 @@ func main() {
 	r := gin.Default()
 
 	routeConfig := routes.RouteConfig{
-		App:         r,
-		AuthHandler: authHandler,
-		TaskHandler: taskHandler,
+		App:             r,
+		AuthHandler:     authHandler,
+		TaskHandler:     taskHandler,
+		IdempotencyRepo: idempotencyRepo,
 	}
 	routeConfig.SetupRoutes()
 
