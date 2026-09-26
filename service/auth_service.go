@@ -1,7 +1,7 @@
 package service
 
 import (
-	"errors"
+	"net/http"
 
 	"flow-desk/dto"
 	"flow-desk/entity"
@@ -25,12 +25,12 @@ func NewAuthService(userRepo repository.UserRepository) AuthService {
 func (s *authService) Register(req dto.RegisterRequest) (*dto.AuthResponse, error) {
 	existingUser, _ := s.userRepo.FindByEmail(req.Email)
 	if existingUser != nil {
-		return nil, errors.New("email sudah terdaftar")
+		return nil, utils.NewBadRequestError("EMAIL_ALREADY_EXISTS", "Email sudah terdaftar", nil)
 	}
 
 	hashedPassword, err := utils.HashPassword(req.Password)
 	if err != nil {
-		return nil, errors.New("gagal memproses password")
+		return nil, utils.NewInternalServerError("HASH_PASSWORD_ERROR", "Gagal memproses password", err)
 	}
 
 	user := entity.User{
@@ -41,12 +41,12 @@ func (s *authService) Register(req dto.RegisterRequest) (*dto.AuthResponse, erro
 
 	err = s.userRepo.Create(&user)
 	if err != nil {
-		return nil, errors.New("gagal menyimpan user")
+		return nil, utils.NewInternalServerError("CREATE_USER_ERROR", "Gagal menyimpan user", err)
 	}
 
 	token, err := utils.GenerateToken(user.ID)
 	if err != nil {
-		return nil, errors.New("gagal membuat token autentikasi")
+		return nil, utils.NewInternalServerError("GENERATE_TOKEN_ERROR", "Gagal membuat token autentikasi", err)
 	}
 
 	return &dto.AuthResponse{
@@ -62,16 +62,16 @@ func (s *authService) Register(req dto.RegisterRequest) (*dto.AuthResponse, erro
 func (s *authService) Login(req dto.LoginRequest) (*dto.AuthResponse, error) {
 	user, err := s.userRepo.FindByEmail(req.Email)
 	if err != nil {
-		return nil, errors.New("email atau password salah")
+		return nil, utils.NewAppError(http.StatusUnauthorized, "AUTH_INVALID_CREDENTIALS", "Email atau password salah", err)
 	}
 
 	if !utils.CheckPasswordHash(req.Password, user.Password) {
-		return nil, errors.New("email atau password salah")
+		return nil, utils.NewAppError(http.StatusUnauthorized, "AUTH_INVALID_CREDENTIALS", "Email atau password salah", nil)
 	}
 
 	token, err := utils.GenerateToken(user.ID)
 	if err != nil {
-		return nil, errors.New("gagal membuat token autentikasi")
+		return nil, utils.NewInternalServerError("GENERATE_TOKEN_ERROR", "Gagal membuat token autentikasi", err)
 	}
 
 	return &dto.AuthResponse{

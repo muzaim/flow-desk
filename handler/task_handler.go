@@ -6,6 +6,7 @@ import (
 
 	"flow-desk/dto"
 	"flow-desk/service"
+	"flow-desk/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -23,13 +24,14 @@ func (h *TaskHandler) Create(c *gin.Context) {
 
 	var req dto.CreateTaskRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		appErr := utils.NewBadRequestError("INVALID_INPUT", "Format payload request tidak valid", err)
+		utils.RespondWithError(c, appErr)
 		return
 	}
 
 	res, err := h.taskService.CreateTask(userID, req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, err)
 		return
 	}
 
@@ -43,14 +45,17 @@ func (h *TaskHandler) GetAll(c *gin.Context) {
 	userID := c.MustGet("userID").(uint)
 	var query dto.TaskQueryParam
 	if err := c.ShouldBindQuery(&query); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		appErr := utils.NewBadRequestError("INVALID_QUERY_PARAM", "Parameter query tidak valid", err)
+		utils.RespondWithError(c, appErr)
 		return
 	}
+
 	res, err := h.taskService.GetTasks(userID, query)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, err)
 		return
 	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Berhasil mengambil daftar task",
 		"data":    res.Data,
@@ -64,13 +69,14 @@ func (h *TaskHandler) GetByID(c *gin.Context) {
 	taskIDStr := c.Param("id")
 	taskID, err := strconv.ParseUint(taskIDStr, 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID Task tidak valid"})
+		appErr := utils.NewBadRequestError("INVALID_TASK_ID", "ID Task tidak valid", err)
+		utils.RespondWithError(c, appErr)
 		return
 	}
 
 	res, err := h.taskService.GetTaskByID(uint(taskID), userID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, err)
 		return
 	}
 
@@ -86,19 +92,21 @@ func (h *TaskHandler) Update(c *gin.Context) {
 	taskIDStr := c.Param("id")
 	taskID, err := strconv.ParseUint(taskIDStr, 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID Task tidak valid"})
+		appErr := utils.NewBadRequestError("INVALID_TASK_ID", "ID Task tidak valid", err)
+		utils.RespondWithError(c, appErr)
 		return
 	}
 
 	var req dto.UpdateTaskRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		appErr := utils.NewBadRequestError("INVALID_INPUT", "Format payload request tidak valid", err)
+		utils.RespondWithError(c, appErr)
 		return
 	}
 
 	res, err := h.taskService.UpdateTask(uint(taskID), userID, req)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, err)
 		return
 	}
 
@@ -114,13 +122,14 @@ func (h *TaskHandler) Delete(c *gin.Context) {
 	taskIDStr := c.Param("id")
 	taskID, err := strconv.ParseUint(taskIDStr, 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID Task tidak valid"})
+		appErr := utils.NewBadRequestError("INVALID_TASK_ID", "ID Task tidak valid", err)
+		utils.RespondWithError(c, appErr)
 		return
 	}
 
 	err = h.taskService.DeleteTask(uint(taskID), userID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, err)
 		return
 	}
 
