@@ -13,14 +13,16 @@ func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Header Authorization diperlukan"})
+			appErr := utils.NewAppError(http.StatusUnauthorized, "UNAUTHORIZED", "Header Authorization diperlukan", nil)
+			utils.RespondWithError(c, appErr)
 			c.Abort()
 			return
 		}
 
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Format token harus 'Bearer <token>'"})
+			appErr := utils.NewAppError(http.StatusUnauthorized, "UNAUTHORIZED", "Format token harus 'Bearer <token>'", nil)
+			utils.RespondWithError(c, appErr)
 			c.Abort()
 			return
 		}
@@ -29,7 +31,8 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		claims, err := utils.ValidateToken(tokenString)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Token tidak valid atau sudah kadaluwarsa"})
+			appErr := utils.NewAppError(http.StatusUnauthorized, "UNAUTHORIZED", "Token tidak valid atau sudah kadaluwarsa", err)
+			utils.RespondWithError(c, appErr)
 			c.Abort()
 			return
 		}

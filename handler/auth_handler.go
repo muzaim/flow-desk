@@ -5,6 +5,7 @@ import (
 
 	"flow-desk/dto"
 	"flow-desk/service"
+	"flow-desk/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,13 +21,14 @@ func NewAuthHandler(authService service.AuthService) *AuthHandler {
 func (h *AuthHandler) Register(c *gin.Context) {
 	var req dto.RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		appErr := utils.NewBadRequestError("INVALID_INPUT", "Format payload request tidak valid", err)
+		utils.RespondWithError(c, appErr)
 		return
 	}
 
 	res, err := h.authService.Register(req)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, err)
 		return
 	}
 
@@ -39,13 +41,14 @@ func (h *AuthHandler) Register(c *gin.Context) {
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req dto.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		appErr := utils.NewBadRequestError("INVALID_INPUT", "Format payload request tidak valid", err)
+		utils.RespondWithError(c, appErr)
 		return
 	}
 
 	res, err := h.authService.Login(req)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, err)
 		return
 	}
 

@@ -1,12 +1,12 @@
 package service
 
 import (
-	"errors"
 	"math"
 
 	"flow-desk/dto"
 	"flow-desk/entity"
 	"flow-desk/repository"
+	"flow-desk/utils"
 )
 
 type TaskService interface {
@@ -40,7 +40,7 @@ func (s *taskService) CreateTask(userID uint, req dto.CreateTaskRequest) (*dto.T
 
 	err := s.taskRepo.Create(&task)
 	if err != nil {
-		return nil, errors.New("gagal membuat task")
+		return nil, utils.NewInternalServerError("CREATE_TASK_ERROR", "Gagal membuat task", err)
 	}
 
 	return formatTaskResponse(&task), nil
@@ -55,7 +55,7 @@ func (s *taskService) GetTasks(userID uint, query dto.TaskQueryParam) (*dto.Pagi
 	}
 	tasks, totalData, err := s.taskRepo.FindByUserID(userID, query)
 	if err != nil {
-		return nil, errors.New("gagal mengambil data task")
+		return nil, utils.NewInternalServerError("GET_TASKS_ERROR", "Gagal mengambil data task", err)
 	}
 	var taskResponses []dto.TaskResponse
 	for _, task := range tasks {
@@ -76,7 +76,7 @@ func (s *taskService) GetTasks(userID uint, query dto.TaskQueryParam) (*dto.Pagi
 func (s *taskService) GetTaskByID(id uint, userID uint) (*dto.TaskResponse, error) {
 	task, err := s.taskRepo.FindByIDAndUserID(id, userID)
 	if err != nil {
-		return nil, errors.New("task tidak ditemukan")
+		return nil, utils.NewNotFoundError("TASK_NOT_FOUND", "Task tidak ditemukan", err)
 	}
 
 	return formatTaskResponse(task), nil
@@ -85,7 +85,7 @@ func (s *taskService) GetTaskByID(id uint, userID uint) (*dto.TaskResponse, erro
 func (s *taskService) UpdateTask(id uint, userID uint, req dto.UpdateTaskRequest) (*dto.TaskResponse, error) {
 	task, err := s.taskRepo.FindByIDAndUserID(id, userID)
 	if err != nil {
-		return nil, errors.New("task tidak ditemukan")
+		return nil, utils.NewNotFoundError("TASK_NOT_FOUND", "Task tidak ditemukan", err)
 	}
 
 	task.Title = req.Title
@@ -94,7 +94,7 @@ func (s *taskService) UpdateTask(id uint, userID uint, req dto.UpdateTaskRequest
 
 	err = s.taskRepo.Update(task)
 	if err != nil {
-		return nil, errors.New("gagal memperbarui task")
+		return nil, utils.NewInternalServerError("UPDATE_TASK_ERROR", "Gagal memperbarui task", err)
 	}
 
 	return formatTaskResponse(task), nil
@@ -103,10 +103,15 @@ func (s *taskService) UpdateTask(id uint, userID uint, req dto.UpdateTaskRequest
 func (s *taskService) DeleteTask(id uint, userID uint) error {
 	_, err := s.taskRepo.FindByIDAndUserID(id, userID)
 	if err != nil {
-		return errors.New("task tidak ditemukan")
+		return utils.NewNotFoundError("TASK_NOT_FOUND", "Task tidak ditemukan", err)
 	}
 
-	return s.taskRepo.Delete(id, userID)
+	err = s.taskRepo.Delete(id, userID)
+	if err != nil {
+		return utils.NewInternalServerError("DELETE_TASK_ERROR", "Gagal menghapus task", err)
+	}
+
+	return nil
 }
 
 func formatTaskResponse(task *entity.Task) *dto.TaskResponse {

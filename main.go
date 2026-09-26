@@ -33,7 +33,8 @@ func main() {
 	taskService := service.NewTaskService(taskRepo)
 	taskHandler := handler.NewTaskHandler(taskService)
 
-	r := gin.Default()
+	r := gin.New()
+	r.Use(gin.Logger())
 
 	routeConfig := routes.RouteConfig{
 		App:             r,

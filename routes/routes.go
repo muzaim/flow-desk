@@ -16,6 +16,12 @@ type RouteConfig struct {
 }
 
 func (c *RouteConfig) SetupRoutes() {
+	c.App.Use(middleware.GlobalErrorHandler())
+
+	c.App.GET("/debug-panic", func(ctx *gin.Context) {
+		panic("Simulasi crash fatal pada server!")
+	})
+
 	c.App.GET("/ping", func(ctx *gin.Context) {
 		ctx.JSON(200, gin.H{
 			"message": "pong",

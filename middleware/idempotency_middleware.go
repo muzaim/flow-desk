@@ -2,9 +2,11 @@ package middleware
 
 import (
 	"bytes"
-	"flow-desk/repository"
 	"net/http"
 	"time"
+
+	"flow-desk/repository"
+	"flow-desk/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -15,24 +17,23 @@ func IdempotencyMiddleware(idempotencyRepo repository.IdempotencyRepository) gin
 		idempotencyKey := c.GetHeader("Idempotency-Key")
 
 		if idempotencyKey == "" {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Header 'Idempotency-Key' wajib diisi untuk membuat task",
-			})
+			appErr := utils.NewBadRequestError("MISSING_IDEMPOTENCY_KEY", "Header 'Idempotency-Key' wajib diisi untuk membuat task", nil)
+			utils.RespondWithError(c, appErr)
 			c.Abort()
 			return
 		}
 
 		if _, err := uuid.Parse(idempotencyKey); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Format 'Idempotency-Key' tidak valid. Harus berupa UUID v4",
-			})
+			appErr := utils.NewBadRequestError("INVALID_IDEMPOTENCY_KEY", "Format 'Idempotency-Key' tidak valid. Harus berupa UUID v4", err)
+			utils.RespondWithError(c, appErr)
 			c.Abort()
 			return
 		}
 
 		userIDVal, exists := c.Get("userID")
 		if !exists {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			appErr := utils.NewAppError(http.StatusUnauthorized, "UNAUTHORIZED", "Unauthorized", nil)
+			utils.RespondWithError(c, appErr)
 			c.Abort()
 			return
 		}
